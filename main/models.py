@@ -241,6 +241,7 @@ class Share(models.Model):
     blog = models.ForeignKey(
         Blog, on_delete=models.CASCADE, related_name='shares')
     created_at = models.DateTimeField(auto_now_add=True)
+    recipients = models.ManyToManyField(CustomUser, related_name='shares_received')
 
 
 class Comment(models.Model):

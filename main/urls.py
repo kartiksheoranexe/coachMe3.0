@@ -4,7 +4,7 @@ from . import views
 from main.parseexcelonboard import parse_excel_file, update_coach_years_of_experience
 from main.slackcom import communicate
 from main.sendemailonboard import SendEmailAPIView
-from main.views import CustomUserCreateAPIView, LoginAPIView, LogoutAPIView, CoachCreateAPIView, CoachListAPIView, PackageCreateAPIView, CoachPackagesListAPIView, ClientCreateAPIView, MappingListAPIView, WalletDetailAPIView, TransactionListAPIView, ClientOnboardAPIView, BlogCreateView, BlogListView, LikeCreateView
+from main.views import CustomUserCreateAPIView, LoginAPIView, LogoutAPIView, CoachCreateAPIView, CoachListAPIView, PackageCreateAPIView, CoachPackagesListAPIView, ClientCreateAPIView, MappingListAPIView, WalletDetailAPIView, TransactionListAPIView, ClientOnboardAPIView, BlogCreateView, BlogListView, LikeCreateView, CommentCreateView, CommentListView, ShareCreateView
 
 urlpatterns = [
     path('register-user/', CustomUserCreateAPIView.as_view(), name='register'),
@@ -39,9 +39,13 @@ urlpatterns = [
 
     path("test/", update_coach_years_of_experience),
 
-    path('create-blog/', BlogCreateView.as_view()),
-    path('list-blog/', BlogListView.as_view()),
-    path('like-blog/', LikeCreateView.as_view()),
+    path('create-blog/', BlogCreateView.as_view(), name="create_blog"),
+    path('list-blog/', BlogListView.as_view(), name="list_all_blog"),
+    path('like-blog/', LikeCreateView.as_view(), name="like_blog"),
+    path('comment-blog/', CommentCreateView.as_view(), name="comment_on_blog"),
+    path('comment-list-blog/', CommentListView.as_view(), name="list_of_all_comments"),
+    path('share-blog/', ShareCreateView.as_view(), name="share_blog"),
+
 
 
 

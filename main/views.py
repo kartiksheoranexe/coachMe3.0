@@ -268,3 +268,47 @@ class LikeCreateView(generics.CreateAPIView):
         for user in users_who_liked:
             user_list.append(user.username)
         return Response({'total_likes': total_likes, 'users_who_liked': user_list}, status=status.HTTP_201_CREATED, headers=headers)
+
+class CommentCreateView(generics.CreateAPIView):
+    serializer_class = CommentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        user = self.request.user
+        request.data['user'] = user.id
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+class CommentListView(generics.ListAPIView):
+    serializer_class = CommentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        blog_id = self.request.data.get('blog')
+        queryset = Comment.objects.filter(blog=blog_id)
+        return queryset
+
+class ShareCreateView(generics.CreateAPIView):
+    serializer_class = ShareSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = self.request.user
+        blog_id = request.data['blog']
+        blog_obj = Blog.objects.get(id=blog_id)
+        recipient_usernames = request.data.get('recipients')
+        if not recipient_usernames or len(recipient_usernames) > 5:
+            raise ValidationError({'error': 'Please provide up to 5 recipients'})
+        recipients = CustomUser.objects.filter(username__in=recipient_usernames)
+        share = Share.objects.create(user=user, blog=blog_obj)
+        share.recipients.set(recipients)
+        share.save()
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+

@@ -67,16 +67,19 @@ class BlogSerializer(serializers.ModelSerializer):
         fields = ('id', 'title', 'content', 'coach', 'created_at', 'image', 'video')
 
 class LikeSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username', read_only=True)
     class Meta:
         model = Like
-        fields = ('id', 'user', 'blog', 'created_at')
+        fields = ('id', 'user', 'username', 'blog', 'created_at')
 
 class ShareSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username', read_only=True)
     class Meta:
         model = Share
-        fields = ('id', 'user', 'blog', 'created_at')
+        fields = ('id', 'username', 'blog', 'created_at')
 
 class CommentSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username', read_only=True)
     class Meta:
         model = Comment
-        fields = ('id', 'user', 'blog', 'comment_text', 'created_at')
+        fields = ('id', 'user', 'username', 'blog', 'comment_text', 'created_at')
