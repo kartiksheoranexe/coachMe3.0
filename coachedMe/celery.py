@@ -16,9 +16,7 @@ handler.setFormatter(formatter)
 # add the handlers to the logger
 logger.addHandler(handler)
 
-# from tasks import update_coach_years_of_experience
 from celery import Celery
-# from celery.schedules import crontab
 
 from django.conf import settings
 
@@ -31,6 +29,6 @@ app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
 app.conf.beat_schedule = {
     'update_coach_years_of_experience': {
         'task': 'tasks.update_coach_years_of_experience',
-        'schedule': timedelta(seconds=15),
+        'schedule': timedelta(seconds=30),
     },
 }

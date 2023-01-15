@@ -1,5 +1,5 @@
 from django.contrib import admin
-from main.models import CustomUser, Coach, Achievement, Certificate, Package, Client, Mapping, Wallet, Transaction, ClientOnboard
+from main.models import CustomUser, Coach, Achievement, Certificate, Package, Client, Mapping, Wallet, Transaction, ClientOnboard, Blog, Like, Comment, Share
 
 # Register your models here.
 
@@ -33,6 +33,10 @@ class ClientOnboardAdmin(admin.ModelAdmin):
     list_display = ['coach', 'client']
 
 
+class BlogAdmin(admin.ModelAdmin):
+    list_display = ['coach', 'created_at']
+
+
 admin.site.register(CustomUser, CustomUserAdmin),
 admin.site.register(Coach, CoachAdmin),
 admin.site.register(Achievement),
@@ -43,3 +47,7 @@ admin.site.register(Mapping, MappingAdmin),
 admin.site.register(Wallet, WalletAdmin),
 admin.site.register(Transaction),
 admin.site.register(ClientOnboard, ClientOnboardAdmin)
+admin.site.register(Blog, BlogAdmin),
+admin.site.register(Like),
+admin.site.register(Comment),
+admin.site.register(Share),

@@ -2,7 +2,6 @@ import json
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
-
 from django.contrib.auth import login
 from django.contrib.auth import authenticate
 from django.core.exceptions import ValidationError
@@ -19,9 +18,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import generics, permissions
 from rest_framework import status
+from rest_framework.exceptions import PermissionDenied
 
-from main.models import CustomUser, Coach, Certificate, Achievement, Package, Client, Mapping, Wallet, Transaction, ClientOnboard
-from main.serializers import CustomUserSerializer, CoachSerializer, PackageSerializer, ClientSerializer, MappingSerializer, WalletSerializer, TransactionsSerializer
+from main.models import CustomUser, Coach, Certificate, Achievement, Package, Client, Mapping, Wallet, Transaction, ClientOnboard, Blog, Like, Comment, Share
+from main.serializers import CustomUserSerializer, CoachSerializer, PackageSerializer, ClientSerializer, MappingSerializer, WalletSerializer, TransactionsSerializer, BlogSerializer, LikeSerializer, ShareSerializer, CommentSerializer
 
 
 class CustomUserCreateAPIView(generics.CreateAPIView):
@@ -73,7 +73,8 @@ class CoachCreateAPIView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         user = request.user
         request.data['user'] = user.id
-        request.data['years_of_experience'] = self.request.data.get('years_of_experience')
+        request.data['years_of_experience'] = self.request.data.get(
+            'years_of_experience')
         request.data['category'] = self.request.data.get('category')
         request.data['coach_subtype'] = self.request.data.get('coach_subtype')
         achievement_titles = request.data.get('achievement_titles', [])
@@ -106,6 +107,7 @@ class CoachCreateAPIView(generics.CreateAPIView):
 
 class CoachListAPIView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
+
     def get(self, request, *args, **kwargs):
         coaches = Coach.objects.all()
         category = request.query_params.get('category', None)
@@ -116,7 +118,7 @@ class CoachListAPIView(generics.ListAPIView):
 
         if subcategory:
             coaches = coaches.filter(coach_subtype=subcategory)
-            
+
         serializer = CoachSerializer(coaches, many=True)
         return Response(serializer.data)
 
@@ -220,3 +222,49 @@ class ClientOnboardAPIView(APIView):
 
         return Response({"success": "Client onboarding data saved successfully"}, status=status.HTTP_201_CREATED)
 
+
+class BlogCreateView(generics.CreateAPIView):
+    queryset = Blog.objects.all()
+    serializer_class = BlogSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        user = request.user
+        if user.user_type != 'C':
+            raise PermissionDenied(detail='User is not a coach')
+        coach = Coach.objects.get(user=user)
+        request.data['coach'] = coach.id
+        request.data['title'] = self.request.data.get('title')
+        request.data['content'] = self.request.data.get('content')
+        request.data['image'] = self.request.data.get('image')
+        request.data['video'] = self.request.data.get('video')
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+class BlogListView(generics.ListAPIView):
+    queryset = Blog.objects.all()
+    serializer_class = BlogSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+class LikeCreateView(generics.CreateAPIView):
+    serializer_class = LikeSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        user = self.request.user
+        request.data['user'] = user.id
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        blog = Blog.objects.get(id=request.data['blog'])
+        total_likes = blog.likes.count()
+        users_who_liked = CustomUser.objects.filter(likes__blog=blog)
+        user_list = []
+        for user in users_who_liked:
+            user_list.append(user.username)
+        return Response({'total_likes': total_likes, 'users_who_liked': user_list}, status=status.HTTP_201_CREATED, headers=headers)

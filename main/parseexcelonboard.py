@@ -2,10 +2,9 @@ import pandas as pd
 
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.response import Response
-from rest_framework.renderers import JSONRenderer
 from django.http import JsonResponse
 
-from main.models import ClientOnboard, Client
+from main.models import ClientOnboard, Client, Coach
 
 
 @csrf_exempt
@@ -26,3 +25,16 @@ def parse_excel_file(request):
             coach=client.coach, client=client, client_onboard_data=data)
 
         return JsonResponse(data)
+
+
+
+
+@csrf_exempt
+def update_coach_years_of_experience(request):
+    if request.method == 'POST':
+        coaches = Coach.objects.all()
+        for coach in coaches:
+            print("Hello!")
+            coach.years_of_experience += 1.0
+            coach.save()
+        return JsonResponse({"Status" : "Success!"})

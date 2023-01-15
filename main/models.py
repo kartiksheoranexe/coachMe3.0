@@ -106,7 +106,6 @@ CAREER_CHOICES = (
 )
 
 
-
 class CustomUser(AbstractUser):
     username = models.CharField(max_length=150, unique=True)
     dob = models.DateField()
@@ -136,8 +135,10 @@ class Achievement(models.Model):
 class Coach(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     bio = models.CharField(max_length=254)
-    category = models.CharField(max_length=1, choices=COACH_TYPE_CHOICES, default='F',)
-    coach_subtype = models.CharField(max_length=2,choices=FITNESS_CHOICES,default='BB',)
+    category = models.CharField(
+        max_length=1, choices=COACH_TYPE_CHOICES, default='F',)
+    coach_subtype = models.CharField(
+        max_length=2, choices=FITNESS_CHOICES, default='BB',)
     years_of_experience = models.FloatField(null=True, blank=True)
     certifications = models.ManyToManyField(Certificate)
     achievements = models.ManyToManyField(Achievement)
@@ -211,3 +212,41 @@ class ClientOnboard(models.Model):
     coach = models.ForeignKey(Coach, on_delete=models.CASCADE)
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
     client_onboard_data = JSONField()
+
+
+class Blog(models.Model):
+    title = models.CharField(max_length=255)
+    content = models.TextField()
+    coach = models.ForeignKey(
+        Coach, on_delete=models.CASCADE, related_name='blogs')
+    created_at = models.DateTimeField(auto_now_add=True)
+    image = models.ImageField(upload_to='blogs/images/', blank=True, null=True)
+    video = models.FileField(upload_to='blogs/videos/', blank=True, null=True)
+
+    def __str__(self):
+        return self.title
+
+
+class Like(models.Model):
+    user = models.ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name='likes')
+    blog = models.ForeignKey(
+        Blog, on_delete=models.CASCADE, related_name='likes')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class Share(models.Model):
+    user = models.ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name='shares')
+    blog = models.ForeignKey(
+        Blog, on_delete=models.CASCADE, related_name='shares')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class Comment(models.Model):
+    user = models.ForeignKey(
+        CustomUser, on_delete=models.CASCADE, related_name='comments')
+    blog = models.ForeignKey(
+        Blog, on_delete=models.CASCADE, related_name='comments')
+    comment_text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)

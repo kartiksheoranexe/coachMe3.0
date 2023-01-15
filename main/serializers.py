@@ -1,8 +1,8 @@
 from rest_framework import serializers
 
-
-from main.models import CustomUser, Coach, Achievement, Certificate, Package, Client, Mapping, Wallet, Transaction
+from main.models import CustomUser, Coach, Achievement, Certificate, Package, Client, Mapping, Wallet, Transaction, Blog, Comment, Like, Share
 from main.models import COACH_TYPE_CHOICES, FITNESS_CHOICES
+
 
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -59,3 +59,23 @@ class TransactionsSerializer(serializers.ModelSerializer):
         model = Transaction
         fields = ('unique_id', 'amount_paid', 'transaction_status',
                   'transaction_mode', 'transaction_date', 'transaction_type', 'remark')
+
+class BlogSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Blog
+        fields = ('id', 'title', 'content', 'coach', 'created_at', 'image', 'video')
+
+class LikeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Like
+        fields = ('id', 'user', 'blog', 'created_at')
+
+class ShareSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Share
+        fields = ('id', 'user', 'blog', 'created_at')
+
+class CommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ('id', 'user', 'blog', 'comment_text', 'created_at')

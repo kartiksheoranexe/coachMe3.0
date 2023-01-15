@@ -1,10 +1,10 @@
 from django.urls import path
 
 from . import views
-from main.parseexcelonboard import parse_excel_file
+from main.parseexcelonboard import parse_excel_file, update_coach_years_of_experience
 from main.slackcom import communicate
 from main.sendemailonboard import SendEmailAPIView
-from main.views import CustomUserCreateAPIView, LoginAPIView, LogoutAPIView, CoachCreateAPIView, CoachListAPIView, PackageCreateAPIView, CoachPackagesListAPIView, ClientCreateAPIView, MappingListAPIView, WalletDetailAPIView, TransactionListAPIView, ClientOnboardAPIView
+from main.views import CustomUserCreateAPIView, LoginAPIView, LogoutAPIView, CoachCreateAPIView, CoachListAPIView, PackageCreateAPIView, CoachPackagesListAPIView, ClientCreateAPIView, MappingListAPIView, WalletDetailAPIView, TransactionListAPIView, ClientOnboardAPIView, BlogCreateView, BlogListView, LikeCreateView
 
 urlpatterns = [
     path('register-user/', CustomUserCreateAPIView.as_view(), name='register'),
@@ -36,6 +36,14 @@ urlpatterns = [
     path('sendonboardfilemail/', SendEmailAPIView.as_view()),
 
     path("slack-comm/", communicate, name="send_message"),
+
+    path("test/", update_coach_years_of_experience),
+
+    path('create-blog/', BlogCreateView.as_view()),
+    path('list-blog/', BlogListView.as_view()),
+    path('like-blog/', LikeCreateView.as_view()),
+
+
 
 
 ]
