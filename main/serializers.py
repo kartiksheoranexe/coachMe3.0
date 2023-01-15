@@ -15,6 +15,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
 
 class CoachSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username', read_only=True)
     achievements = serializers.PrimaryKeyRelatedField(
         many=True, queryset=Achievement.objects.all())
     certifications = serializers.PrimaryKeyRelatedField(
@@ -24,7 +25,7 @@ class CoachSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Coach
-        fields = ('id', 'user', 'bio', 'years_of_experience', 'certifications',
+        fields = ('id', 'user', 'username', 'bio', 'years_of_experience', 'certifications',
                   'achievements', 'is_active', 'coach_avatar', 'rating', 'website', 'status', 'category', 'coach_subtype')
 
 
