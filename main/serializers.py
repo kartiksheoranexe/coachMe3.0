@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from main.models import CustomUser, Coach, Achievement, Certificate, Package, Client, Mapping, Wallet, Transaction, Blog, Comment, Like, Share
+from main.models import CustomUser, Coach, Achievement, Certificate, Package, Client, Mapping, Wallet, Transaction, Blog, Comment, Like, Share, Negotiate
 from main.models import COACH_TYPE_CHOICES, FITNESS_CHOICES
 
 
@@ -83,3 +83,13 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ('id', 'user', 'username', 'blog', 'comment_text', 'created_at')
+
+class NegotiateUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Negotiate
+        fields = ('id', 'package', 'client', 'negotiate_message_client', 'negotiate_price_client', 'updated_price', 'status')
+
+class NegotiateCoachSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Negotiate
+        fields = ('id', 'negotiate_message_coach', 'negotiate_price_coach', 'updated_price', 'status')

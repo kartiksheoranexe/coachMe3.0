@@ -1,5 +1,5 @@
 from django.contrib import admin
-from main.models import CustomUser, Coach, Achievement, Certificate, Package, Client, Mapping, Wallet, Transaction, ClientOnboard, Blog, Like, Comment, Share
+from main.models import CustomUser, Coach, Achievement, Certificate, Package, Client, Mapping, Wallet, Transaction, ClientOnboard, Blog, Like, Comment, Share, Negotiate
 
 # Register your models here.
 
@@ -51,3 +51,4 @@ admin.site.register(Blog, BlogAdmin),
 admin.site.register(Like),
 admin.site.register(Comment),
 admin.site.register(Share),
+admin.site.register(Negotiate),

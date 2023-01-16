@@ -20,9 +20,8 @@ from rest_framework import generics, permissions
 from rest_framework import status
 from rest_framework.exceptions import PermissionDenied
 
-from main.models import CustomUser, Coach, Certificate, Achievement, Package, Client, Mapping, Wallet, Transaction, ClientOnboard, Blog, Like, Comment, Share
-from main.serializers import CustomUserSerializer, CoachSerializer, PackageSerializer, ClientSerializer, MappingSerializer, WalletSerializer, TransactionsSerializer, BlogSerializer, LikeSerializer, ShareSerializer, CommentSerializer
-
+from main.models import CustomUser, Coach, Certificate, Achievement, Package, Client, Mapping, Wallet, Transaction, ClientOnboard, Blog, Like, Comment, Share, Negotiate
+from main.serializers import CustomUserSerializer, CoachSerializer, PackageSerializer, ClientSerializer, MappingSerializer, WalletSerializer, TransactionsSerializer, BlogSerializer, LikeSerializer, ShareSerializer, CommentSerializer, NegotiateUserSerializer, NegotiateCoachSerializer
 
 class CustomUserCreateAPIView(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
@@ -107,7 +106,7 @@ class CoachCreateAPIView(generics.CreateAPIView):
 
 class CoachListAPIView(generics.ListAPIView):
     permission_classes = [permissions.IsAuthenticated]
-
+    
     def get(self, request, *args, **kwargs):
         coaches = Coach.objects.all()
         category = request.query_params.get('category', None)
@@ -152,8 +151,13 @@ class ClientCreateAPIView(generics.CreateAPIView):
         package = get_object_or_404(Package, pk=package_id)
         user = self.request.user
         wallet, created = Wallet.objects.get_or_create(user=user)
-        if wallet.balance >= package.base_price:
-            wallet.balance -= package.base_price
+        package_obj = Package.objects.get(id=package_id)
+        negotiate_obj = Negotiate.objects.get(package=package_obj, status='S')
+        latest_price = negotiate_obj.updated_price
+        
+
+        if wallet.balance >= latest_price:
+            wallet.balance -= latest_price
             wallet.save()
 
             end_date = datetime.now()
@@ -165,16 +169,74 @@ class ClientCreateAPIView(generics.CreateAPIView):
                 end_date += relativedelta(days=package.duration)
 
             client = serializer.save(coach=package.coach, user=user)
-            Mapping.objects.create(package_id=package, coach_id=package.coach,
-                                   client=client, start_date=datetime.now(), end_date=end_date)
 
-            Transaction.objects.create(wallet=wallet, amount_paid=package.base_price, transaction_status='S',
+            Mapping.objects.create(package_id=package, coach_id=package.coach,
+                                   client=client, start_date=datetime.now(), end_date=end_date, actual_price=latest_price)
+
+            Transaction.objects.create(wallet=wallet, amount_paid=latest_price, transaction_status='S',
                                        transaction_mode='UPI', transaction_type='P', remark='Package purchase', client=client)
 
             user.user_type = 'L'
             user.save()
         else:
             raise ValidationError({'error': 'Insufficient balance'})
+
+class NegotiateCreateView(generics.CreateAPIView):
+    queryset = Negotiate.objects.all()
+    serializer_class = NegotiateUserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        package_id = self.request.data.get('package')
+        user_id = self.request.data.get('client')
+        package = Package.objects.get(id=package_id)
+        user = CustomUser.objects.get(id=user_id)
+        coach = package.coach
+        updated_price = package.base_price
+        data = {}
+        negotiate_message_client = self.request.data.get('negotiate_message_client')
+        negotiate_price_client = self.request.data.get('negotiate_price_client')
+        negotiate = serializer.save(package=package, client=user, updated_price=updated_price, negotiate_message_client=negotiate_message_client, negotiate_price_client=negotiate_price_client)
+        # data = {
+        #     "negotiate_id": negotiate.id,
+        #     "coach_id": coach.id,
+        #     "status": negotiate.status
+        # }
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+class CoachNegotiateCreatView(generics.CreateAPIView):
+    queryset = Negotiate.objects.all()
+    serializer_class = NegotiateCoachSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        negotiate_id = self.request.data.get('negotiate_id')
+        negotiate = Negotiate.objects.get(id=negotiate_id)
+        package = negotiate.package
+        client = negotiate.client
+        coach = package.coach
+        updated_price = negotiate.updated_price
+        data = {}
+        negotiate_message_coach = self.request.data.get('negotiate_message_coach')
+        negotiate_price_coach = self.request.data.get('negotiate_price_coach')
+
+        negotiate.negotiate_message_coach = negotiate_message_coach
+        negotiate.negotiate_price_coach = negotiate_price_coach
+        negotiate.updated_price = negotiate_price_coach
+
+        if negotiate.negotiate_price_client == negotiate.negotiate_price_coach:
+            negotiate.status = 'S'
+        else:
+            negotiate.status = 'P'
+        negotiate.save()
+        
+        data = {
+            "negotiate_id": negotiate.id,
+            "status": negotiate.status,
+            "updated_price": negotiate.updated_price
+        }
+        return JsonResponse({"Data": data}, status=status.HTTP_200_OK)
+
 
 
 class MappingListAPIView(generics.ListAPIView):

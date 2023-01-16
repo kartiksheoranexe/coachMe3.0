@@ -176,6 +176,15 @@ class Client(models.Model):
     def __str__(self):
         return self.user.username
 
+class Negotiate(models.Model):
+    package = models.ForeignKey(Package, on_delete=models.CASCADE)
+    client = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    negotiate_message_coach = models.CharField(max_length=255)
+    negotiate_message_client = models.CharField(max_length=255)
+    negotiate_price_coach = models.IntegerField(default=0)
+    negotiate_price_client = models.IntegerField(default=0)
+    updated_price = models.IntegerField(default=0)
+    status = models.CharField(max_length=20, choices=STATUS, default="Pending")
 
 class Mapping(models.Model):
     package_id = models.ForeignKey(Package, on_delete=models.CASCADE)
@@ -183,6 +192,7 @@ class Mapping(models.Model):
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
+    actual_price = models.IntegerField(default=0)
 
 
 class Wallet(models.Model):

@@ -4,7 +4,7 @@ from . import views
 from main.parseexcelonboard import parse_excel_file, update_coach_years_of_experience
 from main.slackcom import communicate
 from main.sendemailonboard import SendEmailAPIView
-from main.views import CustomUserCreateAPIView, LoginAPIView, LogoutAPIView, CoachCreateAPIView, CoachListAPIView, PackageCreateAPIView, CoachPackagesListAPIView, ClientCreateAPIView, MappingListAPIView, WalletDetailAPIView, TransactionListAPIView, ClientOnboardAPIView, BlogCreateView, BlogListView, LikeCreateView, CommentCreateView, CommentListView, ShareCreateView
+from main.views import CustomUserCreateAPIView, LoginAPIView, LogoutAPIView, CoachCreateAPIView, CoachListAPIView, PackageCreateAPIView, CoachPackagesListAPIView, ClientCreateAPIView, MappingListAPIView, WalletDetailAPIView, TransactionListAPIView, ClientOnboardAPIView, BlogCreateView, BlogListView, LikeCreateView, CommentCreateView, CommentListView, ShareCreateView, NegotiateCreateView, CoachNegotiateCreatView
 
 urlpatterns = [
     path('register-user/', CustomUserCreateAPIView.as_view(), name='register'),
@@ -37,6 +37,7 @@ urlpatterns = [
 
     path("slack-comm/", communicate, name="send_message"),
 
+     #test for celery
     path("test/", update_coach_years_of_experience),
 
     path('create-blog/', BlogCreateView.as_view(), name="create_blog"),
@@ -46,7 +47,8 @@ urlpatterns = [
     path('comment-list-blog/', CommentListView.as_view(), name="list_of_all_comments"),
     path('share-blog/', ShareCreateView.as_view(), name="share_blog"),
 
-
+    path('negotiate-client/', NegotiateCreateView.as_view(), name="client-negotiate"),
+    path('negotiate-coach/', CoachNegotiateCreatView.as_view(), name="coach-negotiate"),
 
 
 
