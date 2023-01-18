@@ -24,6 +24,13 @@ class MusclePartsSerializer(serializers.ModelSerializer):
         fields = ['id', 'split', 'muscles',
                   'total_sets', 'exercise_selections']
 
+class MusclePartsExcelSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = MuscleParts
+        fields = ['id', 'split', 'muscles',
+                  'total_sets']
+
 class LogPerformanceSerializer(serializers.ModelSerializer):
     class Meta:
         model = LogPerformance
