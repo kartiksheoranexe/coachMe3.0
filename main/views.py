@@ -125,6 +125,7 @@ class CoachListAPIView(generics.ListAPIView):
 class PackageCreateAPIView(generics.CreateAPIView):
     queryset = Package.objects.all()
     serializer_class = PackageSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
     def perform_create(self, serializer):
         coach_id = self.kwargs['coach_id']
@@ -134,6 +135,7 @@ class PackageCreateAPIView(generics.CreateAPIView):
 
 class CoachPackagesListAPIView(generics.ListAPIView):
     serializer_class = PackageSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         coach_id = self.kwargs['coach_id']
