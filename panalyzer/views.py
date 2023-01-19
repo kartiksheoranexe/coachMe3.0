@@ -115,6 +115,7 @@ class ExcelTrainingDesignView(generics.CreateAPIView):
     parser_classes = (FileUploadParser,)
     queryset = TrainingSplit.objects.all()
     serializer_class = TrainingSplitSerializer
+    permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
         try:
@@ -139,17 +140,30 @@ class ExcelTrainingDesignView(generics.CreateAPIView):
                 client_usr_obj = CustomUser.objects.get(username=client_name)
                 coach_obj = Coach.objects.get(user=coach_usr_obj)
                 client_obj = Client.objects.get(user=client_usr_obj)
-                parsed_data.append({
+                training_split_obj, created = TrainingSplit.objects.update_or_create(
+                    coach=coach_obj, 
+                    client=client_obj,
+                )
+                if created:
+                    parsed_data.append({
                     'coach': coach_obj.id,
                     'client': client_obj.id,
                     'pre_def': split_details[0],
                     'split_name': split_details[1],
                     'split_desc': split_details[2],
                     'split_days': split_details[3]
-                })
+                    })
+                else:
+                     parsed_data.append({
+                    'coach': coach_obj.id,
+                    'client': client_obj.id,
+                    'pre_def': split_details[0],
+                    'split_name': split_details[1],
+                    'split_desc': split_details[2],
+                    'split_days': split_details[3]
+                    })
             serializer = self.get_serializer(data=parsed_data, many=True)
             serializer.is_valid(raise_exception=True)
-            self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)
             return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
         except MultiValueDictKeyError:
@@ -159,6 +173,7 @@ class ExcelExerciseSelectionView(generics.CreateAPIView):
     parser_classes = (FileUploadParser,)
     queryset = MuscleParts.objects.all()
     serializer_class = MusclePartsExcelSerializer
+    permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
         try:
