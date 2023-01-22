@@ -44,7 +44,7 @@ class TrainingSplit(models.Model):
 class MuscleParts(models.Model):
     split = models.ForeignKey(TrainingSplit, on_delete=models.CASCADE)
     muscles = models.CharField(max_length=2, choices=MUSCLE_TYPE)
-    total_sets = models.IntegerField()
+    total_sets = models.IntegerField(null=True)
 
     def __str__(self):
         return self.muscles + " - " + self.split.split_name
@@ -53,9 +53,9 @@ class MuscleParts(models.Model):
 class ExerciseSelection(models.Model):
     muscle = models.ForeignKey(MuscleParts, on_delete=models.CASCADE)
     exercise_name = models.CharField(max_length=100)
-    sets = models.IntegerField()
-    rep_range = models.CharField(max_length=100, default=None)
-    exercise_description = models.TextField()
+    sets = models.IntegerField(null=True)
+    rep_range = models.CharField(max_length=100, default=None, null=True)
+    exercise_description = models.TextField(null=True)
 
     def __str__(self):
         return self.muscle.muscles + ' - ' + self.muscle.split.split_name + ' - ' + self.exercise_name
