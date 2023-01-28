@@ -1,6 +1,7 @@
 from django.urls import path
 
 from . import views
+from main.scripts import chatgpt_clone_view
 from main.parseexcelonboard import parse_excel_file, update_coach_years_of_experience
 from main.slackcom import communicate
 from main.sendemailonboard import SendEmailAPIView
@@ -49,6 +50,8 @@ urlpatterns = [
 
     path('negotiate-client/', NegotiateCreateView.as_view(), name="client-negotiate"),
     path('negotiate-coach/', CoachNegotiateCreatView.as_view(), name="coach-negotiate"),
+
+    path('chatgpt-clone/', chatgpt_clone_view, name='chatgpt_clone'),
 
 
 
