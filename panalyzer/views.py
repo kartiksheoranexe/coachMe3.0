@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 
 from django.db.models import Min, Max
 from django.shortcuts import render
@@ -316,86 +317,67 @@ class ExcelWorkoutCreationView(generics.CreateAPIView):
             return Response({"No client log file attached!"})
 
 
-class ExcelLogCreationView(generics.CreateAPIView):
-    parser_classes = (FileUploadParser,)
-    queryset = LogPerformance.objects.all()
-    serializer_class = LogPerformanceSerializer
-    # permission_classes = [IsAuthenticated]
+# class ExcelLogCreationView(generics.CreateAPIView):
+#     parser_classes = (FileUploadParser,)
+#     queryset = LogPerformance.objects.all()
+#     serializer_class = LogPerformanceSerializer
+#     # permission_classes = [IsAuthenticated]
 
-    def post(self, request, *args, **kwargs):
-        try:
-            file_obj = request.FILES['file']
-            df = pd.read_excel(file_obj, sheet_name='Client Details', engine='openpyxl')
-            coach_client_df = df.loc[:, ['Unnamed: 1', 'Unnamed: 5']]
-            coach_client_dict = coach_client_df.to_dict(orient='split')
-            coach_client_list = coach_client_dict['data']
-            coach_client_map = {}
-            for coach_client in coach_client_list:
-                coach_client_map[coach_client[0]] = coach_client[1]
-            df2 = pd.read_excel(file_obj, sheet_name='Logs1', engine='openpyxl')
-            # print(df2)
-            split_details_df = df2.loc[:, ['Workout 1','Day', 'Exercise Name', 'Sets', 'Weights', 'Unit', 'Reps', 'Day', 'Exercise Name', 'Sets', 'Weights', 'Unit', 'Reps']]
-            # print(split_details_df)
-            split_details_dict = split_details_df.to_dict(orient='split')
-            print(split_details_dict)
-            split_details_list = split_details_dict['data']
-            # print(split_details_list)
-            parsed_data = []
-            split_details_list = [item for item in split_details_list if not any(pd.isnull(val) for val in item)]
-            # print(split_details_list)
-            MUSCLE_TYPE = (
-                ('Chest', 'CH'),
-                ('Back', 'BA'),
-                ('Legs', 'LE'),
-                ('Shoulders', 'SH'),
-                ('Arms', 'AR'),
-                ('Abs', 'AB'),
-            )
-            abbreviations = dict(MUSCLE_TYPE)
-            split_details_list = [[abbreviations.get(x[0], x[0]), x[1], x[2], x[3], x[4]] for x in split_details_list]
-            for split_details in split_details_list:
-                print(split_details)
-                coach_name = list(coach_client_map.keys())[0]
-                coach_usr_obj = CustomUser.objects.get(username=coach_name)
-                client_name = coach_client_map[coach_name]
-                client_usr_obj = CustomUser.objects.get(username=client_name)
-                coach_obj = Coach.objects.get(user=coach_usr_obj)
-                client_obj = Client.objects.get(user=client_usr_obj)
-                training_split_obj = TrainingSplit.objects.get(coach=coach_obj,client=client_obj)
-                muscle_obj = MuscleParts.objects.filter(split=training_split_obj)
-                try:
-                    m_muscle_obj = muscle_obj.get(muscles=split_details[0])
-                    print(m_muscle_obj)
-                except MuscleParts.DoesNotExist:
-                    print("not found in muscle_obj")
-                exercise_selection_obj, created = ExerciseSelection.objects.update_or_create(
-                    muscle=m_muscle_obj, 
-                    exercise_name=split_details[1],
-                    defaults={
-                        'sets': split_details[2],
-                        'rep_range': split_details[3],
-                        'exercise_description': split_details[4],
-                    }
-                )
-                if created:
-                    parsed_data.append({
-                        'muscle': m_muscle_obj.id,
-                        'exercise_name': split_details[1],
-                        'sets': split_details[2],
-                        'rep_range': split_details[3],
-                        'exercise_description': split_details[4]
-                    })
-                else:
-                     parsed_data.append({
-                        'muscle': m_muscle_obj.id,
-                        'exercise_name': split_details[1],
-                        'sets': exercise_selection_obj.sets,
-                        'rep_range': exercise_selection_obj.rep_range,
-                        'exercise_description': exercise_selection_obj.exercise_description
-                    })
-            serializer = self.get_serializer(data=parsed_data, many=True)
-            serializer.is_valid(raise_exception=True)
-            headers = self.get_success_headers(serializer.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-        except MultiValueDictKeyError:
-            return Response({"No client log file attached!"})
+#     def post(self, request, *args, **kwargs):
+#         try:
+#             parsed_data = []
+#             log_performance = []
+#             file_obj = request.FILES['file']
+#             df = pd.read_excel(file_obj, sheet_name='Client Details', engine='openpyxl')
+#             coach_client_df = df.loc[:, ['Unnamed: 1', 'Unnamed: 5']]
+#             coach_client_dict = coach_client_df.to_dict(orient='split')
+#             coach_client_list = coach_client_dict['data']
+#             coach_client_map = {}
+#             for coach_client in coach_client_list:
+#                 coach_client_map[coach_client[0]] = coach_client[1]
+#             df2 = pd.read_excel(file_obj, sheet_name='Logs2', engine='openpyxl')
+#             json_obj = df2.to_json()
+
+#             # print(json_obj)
+#             data = json.loads(json_obj)
+#             print(data)
+#             workouts = []
+#             for i in range(len(data)):
+#                 if data['Day'][str(i)]:
+#                     workout = {
+#                         'day': data['Day'][str(i)],
+#                         'exercises': []
+#                     }
+#                     print(workout)
+#                     j = 1
+#                     while data.get(f'Exercise Name {j}'):
+#                         exercise = {
+#                             'name': data[f'Exercise Name {j}'][i],
+#                             'sets': []
+#                         }
+#                         k = 1
+#                         while data.get(f'Workout {j}_{k}'):
+#                             set_num = data[f'Workout {j}_{k}'][i]
+#                             weight = data[f'Weight {j}_{k}'][i]
+#                             unit = data[f'Unit {j}_{k}'][i]
+#                             reps = data[f'Reps {j}_{k}'][i]
+#                             exercise['sets'].append({
+#                                 'set_num': set_num,
+#                                 'weight': weight,
+#                                 'unit': unit,
+#                                 'reps': reps
+#                             })
+#                             k += 1
+#                         workout['exercises'].append(exercise)
+#                         j += 1
+#                     workouts.append(workout)
+#                     print(workouts)
+
+
+
+#             serializer = self.get_serializer(data=parsed_data, many=True)
+#             serializer.is_valid(raise_exception=True)
+#             headers = self.get_success_headers(serializer.data)
+#             return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+#         except MultiValueDictKeyError:
+#             return Response({"No client log file attached!"})

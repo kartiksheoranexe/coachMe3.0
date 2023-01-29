@@ -1,7 +1,7 @@
 from django.urls import path
 
 from . import views
-from panalyzer.views import CreateWorkoutPlan, LogPerformanceCreateView, CalculateMuscleLoadView, HeartPerformanceView, ExcelTrainingDesignView, ExcelExerciseSelectionView, ExcelWorkoutCreationView,  ExcelLogCreationView
+from panalyzer.views import CreateWorkoutPlan, LogPerformanceCreateView, CalculateMuscleLoadView, HeartPerformanceView, ExcelTrainingDesignView, ExcelExerciseSelectionView, ExcelWorkoutCreationView
 
 urlpatterns = [
     path('create-workout-plan/', CreateWorkoutPlan.as_view(), name='register'),
@@ -13,5 +13,5 @@ urlpatterns = [
     path('design-training-excel/', ExcelTrainingDesignView.as_view(), name='design-training-excel'),
     path('exercise-selection-excel/', ExcelExerciseSelectionView.as_view(), name='exercise-selection-excel'),
     path('workout-creation-excel/', ExcelWorkoutCreationView.as_view(), name='workout-creation-excel'),
-    path('log-creation-excel/', ExcelLogCreationView.as_view(), name='log-creation-excel'),
+    # path('log-creation-excel/', ExcelLogCreationView.as_view(), name='log-creation-excel'),
 ]
