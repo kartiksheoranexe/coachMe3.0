@@ -81,3 +81,33 @@ class HeartPerformance(models.Model):
     maximum_heart_rate = models.IntegerField()
     timestamp = models.DateTimeField(auto_now_add=True)
     
+class Picture(models.Model):
+    image = models.ImageField(upload_to='checkin_pics/')
+
+class WeeklyCheckins(models.Model):
+    coach = models.ForeignKey(Coach, on_delete=models.CASCADE)
+    client =  models.ForeignKey(Client, on_delete=models.CASCADE)
+    starting_weight = models.IntegerField()
+    current_weight = models.IntegerField()
+    energy_levels = models.IntegerField(
+        default=1,
+        validators=[MaxValueValidator(10), MinValueValidator(1)]
+    )
+    strength_levels = models.IntegerField(
+        default=1,
+        validators=[MaxValueValidator(10), MinValueValidator(1)]
+    )
+    waist = models.FloatField()
+    hips = models.FloatField()
+    right_arm = models.FloatField()
+    right_quad = models.FloatField()
+    right_calf = models.FloatField()
+    pictures = models.ManyToManyField(Picture, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+
+    def __str__(self):
+        return f"WeeklyCheckins {self.pk}"
+
+
+
+

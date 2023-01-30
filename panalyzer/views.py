@@ -13,8 +13,8 @@ from rest_framework.views import APIView
 from rest_framework.parsers import FileUploadParser
 import pandas as pd
 
-from panalyzer.serializers import TrainingSplitSerializer, MusclePartsExcelSerializer, ExerciseSelectionSerializer, LogPerformanceSerializer, HeartPerformanceSerializer, HeartPerformanceMinMaxSerializer
-from panalyzer.models import TrainingSplit, MuscleParts, LogPerformance, HeartPerformance, ExerciseSelection
+from panalyzer.serializers import TrainingSplitSerializer, MusclePartsExcelSerializer, ExerciseSelectionSerializer, LogPerformanceSerializer, HeartPerformanceSerializer, HeartPerformanceMinMaxSerializer, WeeklyCheckinsSerializer
+from panalyzer.models import TrainingSplit, MuscleParts, LogPerformance, HeartPerformance, ExerciseSelection, Picture, WeeklyCheckins
 from panalyzer.scripts import calculate_muscle_load
 
 from main.models import CustomUser, Coach, Client
@@ -381,3 +381,38 @@ class ExcelWorkoutCreationView(generics.CreateAPIView):
 #             return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 #         except MultiValueDictKeyError:
 #             return Response({"No client log file attached!"})
+
+class WeeklyCheckinsCreateAPIView(generics.CreateAPIView):
+    serializer_class = WeeklyCheckinsSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        client = Client.objects.get(user=self.request.user)
+        coach = client.coach
+        picture_data = self.request.data.pop('pictures')
+        pictures = []
+        for image in picture_data:
+            picture = Picture.objects.create(image=image)
+            pictures.append(picture.pk )
+        serializer.save(client=client, coach=coach, pictures=pictures)
+        
+class CoachClientCheckinsAPIView(generics.ListAPIView):
+    permission_classes = (IsAuthenticated,)
+    serializer_class = WeeklyCheckinsSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        u_obj = CustomUser.objects.get(username=user)
+        coach_obj = Coach.objects.get(user=u_obj)
+        start_date = self.request.data.get('start_date')
+        end_date = self.request.data.get('end_date')
+        client_username = self.request.data.get('client_username')
+        user_obj = CustomUser.objects.get(username=client_username)
+        client_obj =  Client.objects.get(user=user_obj)
+        checkins = WeeklyCheckins.objects.filter(coach=coach_obj)
+        if start_date and end_date:
+            checkins = checkins.filter(created_at__range=[start_date, end_date])
+        if client_obj:
+            checkins = checkins.filter(client=client_obj)
+
+        return checkins

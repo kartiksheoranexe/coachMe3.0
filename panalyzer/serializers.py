@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from panalyzer.models import TrainingSplit, MuscleParts, ExerciseSelection, LogPerformance, HeartPerformance
+from panalyzer.models import TrainingSplit, MuscleParts, ExerciseSelection, LogPerformance, HeartPerformance, WeeklyCheckins, Picture
 
 
 class TrainingSplitSerializer(serializers.ModelSerializer):
@@ -54,3 +54,19 @@ class HeartPerformanceSerializer(serializers.ModelSerializer):
 class HeartPerformanceMinMaxSerializer(serializers.Serializer):
     min = serializers.IntegerField()
     max = serializers.IntegerField()
+
+class WeeklyCheckinsSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = WeeklyCheckins
+        fields = [
+            'starting_weight',
+            'current_weight',
+            'energy_levels',
+            'strength_levels',
+            'waist',
+            'hips',
+            'right_arm',
+            'right_quad',
+            'right_calf',
+        ]
