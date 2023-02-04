@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'main',
     'panalyzer',
     'chat',
+    'nutrition',
     'phone_field',
     'rest_framework',
     'knox',

@@ -22,5 +22,6 @@ urlpatterns = [
     path('main/', include('main.urls')),
     path('panalyzer/', include('panalyzer.urls')),
     path('chat/', include('chat.urls')),
+    path('nutrition/', include('nutrition.urls')),
     
 ]
